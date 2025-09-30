@@ -9,7 +9,7 @@ from actions import convert_file, convert_to_mp4, compress_video, to_uppercase, 
 # GUI POPUP
 # --------------------------------------------
 
-def start_conversion(file_list, func, root, progressbar, percent_label, cancel_event, btn_frame):
+def start_conversion(file_list, func, root, progressbar, percent_label, cancel_event, btn_frame, bottom):
     """
     Run conversion in background thread and update UI safely via the main thread.
     - file_list: list[str]
@@ -28,6 +28,7 @@ def start_conversion(file_list, func, root, progressbar, percent_label, cancel_e
 
     progressbar['value'] = 0
     progressbar.pack(fill='x', pady=(8, 0))
+    percent_label.pack(in_=bottom, side='left')
     percent_label.config(text='0%')
 
     # Use a queue to receive progress updates from the worker
@@ -94,17 +95,6 @@ def show_popup(x, y, context, data, hwnd):
     header = ttk.Label(container, text="Actions", style='Header.TLabel')
     header.pack(anchor='w')
 
-    desc_text = ''
-    if context == 'text':
-        desc_text = f"Text: {data[:80]}" if data else "Text"
-    elif context == 'file':
-        desc_text = f"{len(data)} file(s) selected"
-    else:
-        desc_text = "No valid context detected."
-
-    desc = ttk.Label(container, text=desc_text, wraplength=380, foreground='#333333')
-    desc.pack(anchor='w', pady=(4, 8))
-
     btn_frame = ttk.Frame(container)
     btn_frame.pack(fill='x')
 
@@ -140,15 +130,15 @@ def show_popup(x, y, context, data, hwnd):
 
         if image_files:
             add_action_button(f"Convert {len(image_files)} Image(s)",
-                              lambda: start_conversion(image_files, convert_file, root, progressbar, percent_label, cancel_event, btn_frame))
+                              lambda: start_conversion(image_files, convert_file, root, progressbar, percent_label, cancel_event, btn_frame, bottom))
 
         if video_files:
             non_mp4 = [f for f in video_files if not f.lower().endswith('.mp4')]
             if non_mp4:
                 add_action_button(f"Convert {len(non_mp4)} to MP4",
-                                  lambda: start_conversion(non_mp4, convert_to_mp4, root, progressbar, percent_label, cancel_event, btn_frame))
+                                  lambda: start_conversion(non_mp4, convert_to_mp4, root, progressbar, percent_label, cancel_event, btn_frame, bottom))
             add_action_button(f"Compress {len(video_files)} Video(s)",
-                              lambda: start_conversion(video_files, compress_video, root, progressbar, percent_label, cancel_event, btn_frame))
+                              lambda: start_conversion(video_files, compress_video, root, progressbar, percent_label, cancel_event, btn_frame, bottom))
 
     else:
         ttk.Label(btn_frame, text="No actions available").pack()
@@ -156,14 +146,12 @@ def show_popup(x, y, context, data, hwnd):
     # Bottom row: percent label and cancel/close button
     bottom = ttk.Frame(container)
     bottom.pack(fill='x', pady=(8, 0))
-    percent_label.pack(in_=bottom, side='left')
 
     def on_cancel():
         cancel_event.set()
         root.destroy()
 
-    cancel_btn = ttk.Button(bottom, text='Cancel', command=on_cancel)
-    cancel_btn.pack(side='right')
+    ttk.Button(bottom, text='Cancel', command=on_cancel).pack(side='right')
 
     # Place progressbar just above bottom and hide until needed
     progressbar.pack_forget()
@@ -187,8 +175,6 @@ def show_popup(x, y, context, data, hwnd):
             w = getattr(w, 'master', None)
         # focus is outside the popup
         root.destroy()
-
-    root.bind('<FocusOut>', on_focus_out)
 
     root.focus_force()
     root.mainloop()

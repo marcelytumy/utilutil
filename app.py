@@ -15,8 +15,8 @@ def on_hotkey():
     context, data = detect_context()
     print(f"[Hotkey] Context: {context}, Data: {str(data)[:50]}")
 
-    # Launch popup in a thread to avoid blocking
-    threading.Thread(target=show_popup, args=(x, y, context, data, hwnd)).start()
+    # Launch popup in main thread to avoid Tkinter threading issues
+    show_popup(x, y, context, data, hwnd)
 
 # --------------------------------------------
 # MAIN
