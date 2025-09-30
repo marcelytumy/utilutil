@@ -114,16 +114,25 @@ def show_popup(x, y, context, data, hwnd):
 
     cancel_event = threading.Event()
 
+    # Helper to run a quick action and then close the popup after a short delay
+    def run_and_close(fn, *args, delay=200):
+        try:
+            fn(*args)
+        except Exception as e:
+            print(f"Action error: {e}")
+        # schedule close shortly after to allow clipboard/paste to happen
+        root.after(delay, root.destroy)
+
     def add_action_button(text, command):
         b = ttk.Button(btn_frame, text=text, command=command)
         b.pack(fill='x', pady=4)
         return b
 
     if context == 'text':
-        add_action_button('To Uppercase', lambda: [to_uppercase(data, hwnd), root.destroy()])
-        add_action_button('To Lowercase', lambda: [to_lowercase(data, hwnd), root.destroy()])
-        add_action_button('Reverse', lambda: [reverse_text(data, hwnd), root.destroy()])
-        add_action_button('Translate', lambda: [translate_text(data, hwnd), root.destroy()])
+        add_action_button('To Uppercase', lambda: run_and_close(to_uppercase, data, hwnd))
+        add_action_button('To Lowercase', lambda: run_and_close(to_lowercase, data, hwnd))
+        add_action_button('Reverse', lambda: run_and_close(reverse_text, data, hwnd))
+        add_action_button('Translate', lambda: run_and_close(translate_text, data, hwnd))
 
     elif context == 'file':
         image_files = [f for f in data if is_image_file(f)]
