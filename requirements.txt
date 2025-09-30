@@ -1,0 +1,7 @@
+pyautogui
+pyperclip
+keyboard
+pywin32
+deepl
+langdetect
+python-dotenv
