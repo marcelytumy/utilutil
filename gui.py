@@ -151,7 +151,7 @@ def show_popup(x, y, context, data, hwnd):
 
     def on_cancel():
         cancel_event.set()
-        percent_label.config(text='Cancelling...')
+        root.destroy()
 
     cancel_btn = ttk.Button(bottom, text='Cancel', command=on_cancel)
     cancel_btn.pack(side='right')
